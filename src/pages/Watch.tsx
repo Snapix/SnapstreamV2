@@ -105,7 +105,8 @@ export default function Watch() {
     ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
     : '/placeholder.svg'
 
-  const seasonCount = (details as any)?.seasons?.length ?? 0
+  const seasons = (details as any)?.seasons ?? []
+  const seasonCount = seasons.length
 
   return (
     <div className={`relative min-h-screen pt-16 sm:pt-20 ${fullscreen ? '!pt-0' : ''}`}>
@@ -174,7 +175,7 @@ export default function Watch() {
                       )}
                     </div>
 
-                    {mediaType === 'tv' && (
+                    {mediaType === 'tv' && seasonCount > 0 && (
                       <div className="relative">
                         <button
                           onClick={() => setShowSeasonPicker(!showSeasonPicker)}
@@ -187,22 +188,22 @@ export default function Watch() {
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setShowSeasonPicker(false)} />
                             <div className="absolute bottom-full mb-2 left-0 z-50 bg-[#111] border border-white/10 rounded-2xl p-4 shadow-2xl min-w-[280px] max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-bottom-4 duration-300">
-                              {Array.from({ length: seasonCount || 1 }, (_, s) => (
-                                <div key={s} className="mb-4 last:mb-0">
+                              {seasons.map((s_info: any, s_idx: number) => (
+                                <div key={s_info.id} className="mb-4 last:mb-0">
                                   <p className="text-xs font-black text-zinc-500 uppercase mb-2 px-1 tracking-widest">
-                                    Season {s + 1}
+                                    {s_info.name || `Season ${s_idx + 1}`}
                                   </p>
                                   <div className="grid grid-cols-5 gap-1.5">
-                                    {Array.from({ length: (details as any)?.seasons?.[s]?.episode_count ?? 12 }, (_, e) => (
+                                    {Array.from({ length: s_info.episode_count || 12 }, (_, e) => (
                                       <button
                                         key={e}
                                         onClick={() => {
-                                          setSeason(s + 1)
+                                          setSeason(s_info.season_number || s_idx + 1)
                                           setEpisode(e + 1)
                                           setShowSeasonPicker(false)
                                         }}
                                         className={`w-10 h-10 rounded-lg text-xs font-bold transition-all border ${
-                                          season === s + 1 && episode === e + 1
+                                          season === (s_info.season_number || s_idx + 1) && episode === e + 1
                                             ? 'bg-white text-black border-white'
                                             : 'bg-white/5 text-zinc-400 border-transparent hover:bg-white/10 hover:text-white'
                                         }`}

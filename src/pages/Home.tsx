@@ -1,124 +1,86 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Film, Tv, TrendingUp, Sparkles, Layers } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { Search, Loader2 } from 'lucide-react'
 import { useTMDB } from '../hooks/useTMDB'
-import HeroBanner from '../components/HeroBanner'
-import MovieRow from '../components/MovieRow'
-import { MovieCard } from '../components/MovieCard'
 import DarkVeil from '../components/DarkVeil'
 import { FadeContent } from '../components/FadeContent'
-import { BlurText } from '../components/BlurText'
 import InfiniteMenu from '../components/InfiniteMenu'
+import { tmdb } from '../lib/api'
 
 export default function Home({ backgroundEnabled = true }: { backgroundEnabled?: boolean }) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
   const { data: trending } = useTMDB<any[]>('trending/all/week', [], { page: 1 })
-  const { data: movies } = useTMDB<any[]>('movie/popular', [], { page: 1 })
-  const { data: shows } = useTMDB<any[]>('tv/popular', [], { page: 1 })
-  const { data: topRated } = useTMDB<any[]>('movie/top_rated', [], { page: 1 })
 
-  const [use3DMenu, setUse3DMenu] = useState(false)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([])
+      return
+    }
 
-  const heroItems = useMemo(() => (trending ?? []).slice(0, 6), [trending])
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const res = await tmdb.search(searchQuery)
+        setSearchResults(res.results || [])
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const menuItems = useMemo(() => {
-    return (trending ?? []).map(item => ({
+    const data = searchResults.length > 0 ? searchResults : (trending ?? [])
+    return data.map(item => ({
       image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://picsum.photos/500/750?grayscale',
       link: `/watch/${item.media_type || 'movie'}/${item.id}`,
       title: item.title || item.name || 'Untitled',
       description: item.overview || ''
     }))
-  }, [trending])
+  }, [trending, searchResults])
 
   return (
-    <div className="relative min-h-screen pb-16">
+    <div className="relative h-screen w-full overflow-hidden bg-black text-white antialiased">
       {backgroundEnabled && <DarkVeil />}
 
-      <HeroBanner items={heroItems} />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex justify-end">
-        <button
-          onClick={() => setUse3DMenu(!use3DMenu)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-        >
-          <Layers className="w-4 h-4" />
-          {use3DMenu ? 'Standard View' : 'Try New UI Menu'}
-        </button>
+      {/* Header Area with Search */}
+      <div className="absolute top-0 inset-x-0 z-50 p-6 sm:p-10 flex flex-col items-center">
+        <div className="w-full max-w-2xl">
+          <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="absolute inset-0 bg-[#00f3ff]/20 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+            <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl px-6 py-4 shadow-2xl group-focus-within:border-[#00f3ff]/50 transition-all duration-300">
+              <Search className="w-6 h-6 text-zinc-500 group-focus-within:text-[#00f3ff] transition-colors" />
+              <input
+                type="text"
+                placeholder="Search movies, TV shows, anime..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent border-none outline-none px-4 text-xl font-medium text-white placeholder:text-zinc-500"
+              />
+              {isSearching && <Loader2 className="w-5 h-5 text-[#00f3ff] animate-spin" />}
+            </div>
+          </div>
+          
+          <div className="mt-6 flex items-center justify-center gap-6 animate-in fade-in slide-in-from-top-2 duration-1000 delay-200">
+            <h1 className="font-display text-3xl font-black text-white tracking-widest uppercase opacity-30">
+              SnapStream
+            </h1>
+            <div className="h-6 w-px bg-white/10" />
+            <p className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.4em] opacity-60">
+              {searchResults.length > 0 ? `Results for "${searchQuery}"` : 'Trending This Week'}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <FadeContent delay={0.2}>
-        {use3DMenu ? (
-          <div className="fixed inset-0 z-50 bg-[#060606]">
-            <div className="absolute top-4 right-4 z-[60]">
-              <button
-                onClick={() => setUse3DMenu(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-sm font-semibold text-white hover:bg-white/20 transition-colors shadow-lg backdrop-blur-md"
-              >
-                Close 3D View
-              </button>
-            </div>
-            <InfiniteMenu items={menuItems} />
-          </div>
-        ) : (
-          <div className="mt-8 sm:mt-12 space-y-10 sm:space-y-14">
-            <MovieRow
-              title={
-                <span className="inline-flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-[#00f3ff]" />
-                  <BlurText text="Trending Now" delay={0.1} />
-                </span>
-              }
-            >
-              {trending?.map((item: any) => (
-                <MovieCard key={item.id} item={item} mediaType={item.media_type} />
-              ))}
-            </MovieRow>
-
-            <FadeContent delay={0.2}>
-              <MovieRow
-                title={
-                  <span className="inline-flex items-center gap-2">
-                    <Film className="w-4 h-4 text-[#00f3ff]" />
-                    <BlurText text="Popular Movies" delay={0.15} />
-                  </span>
-                }
-              >
-                {movies?.map((item: any) => (
-                  <MovieCard key={item.id} item={item} mediaType="movie" />
-                ))}
-              </MovieRow>
-            </FadeContent>
-
-            <FadeContent delay={0.3}>
-              <MovieRow
-                title={
-                  <span className="inline-flex items-center gap-2">
-                    <Tv className="w-4 h-4 text-[#00f3ff]" />
-                    <BlurText text="Popular Series" delay={0.2} />
-                  </span>
-                }
-              >
-                {shows?.map((item: any) => (
-                  <MovieCard key={item.id} item={item} mediaType="tv" />
-                ))}
-              </MovieRow>
-            </FadeContent>
-
-            <FadeContent delay={0.4}>
-              <MovieRow
-                title={
-                  <span className="inline-flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#00f3ff]" />
-                    <BlurText text="Top Rated" delay={0.25} />
-                  </span>
-                }
-              >
-                {topRated?.map((item: any) => (
-                  <MovieCard key={item.id} item={item} mediaType="movie" />
-                ))}
-              </MovieRow>
-            </FadeContent>
-          </div>
-        )}
+      <FadeContent delay={0.2} className="h-full w-full">
+        <div className="h-full w-full">
+          <InfiniteMenu items={menuItems} scale={1.3} />
+        </div>
       </FadeContent>
     </div>
   )

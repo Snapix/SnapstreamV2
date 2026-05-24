@@ -21,7 +21,7 @@ function AppFallback() {
   )
 }
 
-function AnimatedRoutes() {
+function AnimatedRoutes({ backgroundEnabled }: { backgroundEnabled: boolean }) {
   const location = useLocation()
   return (
     <AnimatePresence mode="wait">
@@ -33,7 +33,7 @@ function AnimatedRoutes() {
         transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       >
         <Routes location={location}>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home backgroundEnabled={backgroundEnabled} />} />
           <Route path="/watch/:type/:id" element={<Watch />} />
           <Route path="/search" element={<SearchPage />} />
           <Route
@@ -91,7 +91,7 @@ export default function App() {
 
       <main className="transition-all duration-300">
         <Suspense fallback={<AppFallback />}>
-          <AnimatedRoutes />
+          <AnimatedRoutes backgroundEnabled={backgroundEnabled} />
         </Suspense>
       </main>
 
