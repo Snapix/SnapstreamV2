@@ -717,27 +717,23 @@ class InfiniteGridMenu {
         item =>
           new Promise(async resolve => {
             try {
-              const res = await fetch(item.image);
+              // Add cache buster to bypass browser cache potentially serving non-cors headers
+              const url = `${item.image}?t=${Date.now()}`;
+              const res = await fetch(url, { mode: 'cors' });
               const blob = await res.blob();
               const objectUrl = URL.createObjectURL(blob);
               const img = new Image();
-              img.onload = () => resolve(img);
+              img.onload = () => {
+                resolve(img);
+              };
               img.onerror = () => {
-                throw new Error('Image load failed');
+                console.error('Failed to load image into texture atlas:', item.image);
+                resolve(this.#createPlaceholder(cellSize));
               };
               img.src = objectUrl;
             } catch (err) {
-              const fallback = document.createElement('canvas');
-              fallback.width = cellSize;
-              fallback.height = cellSize;
-              const fctx = fallback.getContext('2d');
-              fctx.fillStyle = '#222';
-              fctx.fillRect(0, 0, cellSize, cellSize);
-              fctx.fillStyle = '#fff';
-              fctx.font = '40px sans-serif';
-              fctx.textAlign = 'center';
-              fctx.fillText('Poster', cellSize/2, cellSize/2);
-              resolve(fallback);
+              console.warn('Fetch failed for poster:', item.image, err);
+              resolve(this.#createPlaceholder(cellSize));
             }
           })
       )
@@ -745,13 +741,29 @@ class InfiniteGridMenu {
       images.forEach((img, i) => {
         const x = (i % this.atlasSize) * cellSize;
         const y = Math.floor(i / this.atlasSize) * cellSize;
-        ctx.drawImage(img, x, y, cellSize, cellSize);
+        ctx.drawImage(img as CanvasImageSource, x, y, cellSize, cellSize);
       });
 
       gl.bindTexture(gl.TEXTURE_2D, this.tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
       gl.generateMipmap(gl.TEXTURE_2D);
     });
+  }
+
+  #createPlaceholder(size: number) {
+    const fallback = document.createElement('canvas');
+    fallback.width = size;
+    fallback.height = size;
+    const fctx = fallback.getContext('2d');
+    if (fctx) {
+      fctx.fillStyle = '#111';
+      fctx.fillRect(0, 0, size, size);
+      fctx.fillStyle = '#00f3ff';
+      fctx.font = 'bold 30px sans-serif';
+      fctx.textAlign = 'center';
+      fctx.fillText('SNAPSTREAM', size / 2, size / 2);
+    }
+    return fallback;
   }
 
   #initDiscInstances(count) {
