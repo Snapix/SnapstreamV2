@@ -73,6 +73,8 @@ export interface TMDBPaginated<T> {
 }
 
 export const tmdb = {
+  fetch: <T>(endpoint: string, params?: Record<string, string>) =>
+    tmdbFetch<T>(`/${endpoint.replace(/^\//, '')}`, params ?? {}),
   trending: (page = 1) =>
     tmdbFetch<TMDBPaginated<TMDBMovie & TMDBShow>>('/trending/all/week', { page: String(page) }),
 
