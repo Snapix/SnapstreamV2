@@ -12,7 +12,7 @@ export default function DarkVeil({
   color1 = '#00f3ff',
   color2 = '#a78bfa',
   speed = 0.3,
-  opacity = 0.15,
+  opacity = 0.12,
   className = '',
 }: DarkVeilProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -22,8 +22,8 @@ export default function DarkVeil({
     if (!canvas) return
 
     let animId: number
-    let mouseX = 0
-    let mouseY = 0
+    let mouseX = 0.5
+    let mouseY = 0.5
     let time = 0
 
     const resize = () => {
@@ -44,41 +44,22 @@ export default function DarkVeil({
     window.addEventListener('mousemove', handleMouse)
 
     const ctx = canvas.getContext('2d')!
-    const parseColor = (c: string) => {
-      const d = document.createElement('div')
-      d.style.color = c
-      document.body.appendChild(d)
-      const rgb = getComputedStyle(d).color.match(/\d+/g)?.map(Number) || [0, 243, 255]
-      document.body.removeChild(d)
-      return rgb
-    }
-
-    const c1 = parseColor(color1)
-    const c2 = parseColor(color2)
 
     const draw = () => {
       if (!canvas) return
-      time += 0.01 * speed
+      time += 0.015 * speed
       const w = canvas.width
       const h = canvas.height
       ctx.clearRect(0, 0, w, h)
 
-      const gradient = ctx.createRadialGradient(
-        w * (mouseX || 0.5), h * (mouseY || 0.5), 0,
-        w * (mouseX || 0.5), h * (mouseY || 0.5), w * 0.7
-      )
+      const cx = w * mouseX
+      const cy = h * mouseY
+      const r = Math.max(w, h) * 0.6
 
-      const r1 = c1[0] + Math.sin(time) * 20
-      const g1 = c1[1] + Math.cos(time * 0.7) * 15
-      const b1 = c1[2] + Math.sin(time * 1.2) * 20
-
-      const r2 = c2[0] + Math.cos(time * 0.8) * 15
-      const g2 = c2[1] + Math.sin(time * 0.6) * 15
-      const b2 = c2[2] + Math.cos(time * 0.9) * 20
-
-      gradient.addColorStop(0, `rgba(${r1},${g1},${b1},${opacity})`)
-      gradient.addColorStop(0.5, `rgba(${(r1+r2)/2},${(g1+g2)/2},${(b1+b2)/2},${opacity * 0.5})`)
-      gradient.addColorStop(1, `rgba(${r2},${g2},${b2},0)`)
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r)
+      gradient.addColorStop(0, `rgba(0, 243, 255, ${opacity * (0.8 + Math.sin(time) * 0.2)})`)
+      gradient.addColorStop(0.4, `rgba(167, 139, 250, ${opacity * 0.4})`)
+      gradient.addColorStop(1, 'rgba(0,0,0,0)')
 
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, w, h)
@@ -98,7 +79,7 @@ export default function DarkVeil({
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
+      className={`fixed inset-0 pointer-events-none ${className}`}
       style={{ width: '100%', height: '100%' }}
     />
   )

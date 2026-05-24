@@ -11,77 +11,33 @@ export default function FluidGlass({
   color = '#00f3ff',
   className = '',
 }: FluidGlassProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const elRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
+    const el = elRef.current
+    if (!el) return
 
-    const mouse = { x: 0, y: 0 }
-    let rafId: number
-
-    const onMouse = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect()
-      mouse.x = (e.clientX - rect.left) / rect.width
-      mouse.y = (e.clientY - rect.top) / rect.height
+    const onMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect()
+      const x = ((e.clientX - rect.left) / rect.width) * 100
+      const y = ((1 - (e.clientY - rect.top) / rect.height)) * 100
+      el.style.setProperty('--fx', `${x}%`)
+      el.style.setProperty('--fy', `${y}%`)
     }
 
-    container.addEventListener('mousemove', onMouse)
+    el.addEventListener('mousemove', onMove)
+    return () => el.removeEventListener('mousemove', onMove)
+  }, [])
 
-    const render = () => {
-      const cx = mouse.x * 100
-      const cy = (1 - mouse.y) * 100
-
-      if (mode === 'lens') {
-        container.style.setProperty('--bg-x', `${cx}%`)
-        container.style.setProperty('--bg-y', `${cy}%`)
-      } else if (mode === 'bar') {
-        container.style.setProperty('--bar-offset', `${50 + (mouse.x - 0.5) * 30}%`)
-      } else if (mode === 'cube') {
-        container.style.setProperty('--rotate-x', `${(mouse.y - 0.5) * 20}deg`)
-        container.style.setProperty('--rotate-y', `${(mouse.x - 0.5) * 20}deg`)
-      }
-
-      rafId = requestAnimationFrame(render)
-    }
-
-    rafId = requestAnimationFrame(render)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-      container.removeEventListener('mousemove', onMouse)
-    }
-  }, [mode])
+  const lensBg = `radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), ${color}33, transparent 60%)`
 
   return (
     <div
-      ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
+      ref={elRef}
+      className={`pointer-events-none ${className}`}
       style={{
-        background: mode === 'lens'
-          ? `radial-gradient(circle at var(--bg-x, 50%) var(--bg-y, 50%), ${color}44, transparent 60%)`
-          : mode === 'bar'
-          ? `linear-gradient(90deg, transparent, ${color}33 var(--bar-offset, 50%), transparent)`
-          : undefined,
+        background: mode === 'lens' ? lensBg : 'transparent',
       }}
-    >
-      {mode === 'cube' && (
-        <div
-          className="w-full h-full transition-transform duration-100"
-          style={{
-            transform: 'perspective(600px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg))',
-            transformStyle: 'preserve-3d',
-          }}
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(135deg, ${color}22, transparent 50%, ${color}11)`,
-              borderRadius: 'inherit',
-            }}
-          />
-        </div>
-      )}
-    </div>
+    />
   )
 }

@@ -127,7 +127,7 @@ function MovieCard({ item }: { item: TMDBMovie | TMDBShow }) {
 
   return (
     <Link to={href}>
-      <GlassSurface distortion="subtle" intensity={0.008} className="group cursor-pointer">
+      <GlassSurface className="group cursor-pointer">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}

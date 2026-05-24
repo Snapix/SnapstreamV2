@@ -3,8 +3,6 @@ import { motion } from 'motion/react'
 import { useMovieDetails, useShowDetails } from '../hooks/useTMDB'
 import { imgUrl } from '../lib/api'
 import VideoPlayer from '../components/VideoPlayer'
-import DarkVeil from '../components/react-bits/DarkVeil/DarkVeil'
-
 const EMBED_BASE = 'https://vidking.com/e/movie'
 
 export default function Watch() {
@@ -47,14 +45,6 @@ export default function Watch() {
 
   return (
     <div className="min-h-screen pt-16 relative">
-      <DarkVeil opacity={0.1} speed={0.4} />
-
-      {/* Backdrop */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[60vh] bg-cover bg-center opacity-20"
-        style={{ backgroundImage: `url(${backdrop})` }}
-      />
-      <div className="absolute top-0 left-0 right-0 h-[60vh] bg-gradient-to-b from-transparent to-surface" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div

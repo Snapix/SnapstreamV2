@@ -75,7 +75,7 @@ function SearchCard({ item }: { item: TMDBMovie | TMDBShow }) {
 
   return (
     <Link to={`/watch/${item.id}?type=${type}`}>
-      <GlassSurface distortion="subtle" className="group cursor-pointer">
+      <GlassSurface className="group cursor-pointer">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
