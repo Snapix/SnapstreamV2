@@ -73,44 +73,50 @@ export default function Home({ backgroundEnabled = true }: { backgroundEnabled?:
               ))}
             </MovieRow>
 
-            <MovieRow
-              title={
-                <span className="inline-flex items-center gap-2">
-                  <Film className="w-4 h-4 text-[#00f3ff]" />
-                  <BlurText text="Popular Movies" delay={0.15} />
-                </span>
-              }
-            >
-              {movies?.map((item: any) => (
-                <MovieCard key={item.id} item={item} mediaType="movie" />
-              ))}
-            </MovieRow>
+            <FadeContent delay={0.2}>
+              <MovieRow
+                title={
+                  <span className="inline-flex items-center gap-2">
+                    <Film className="w-4 h-4 text-[#00f3ff]" />
+                    <BlurText text="Popular Movies" delay={0.15} />
+                  </span>
+                }
+              >
+                {movies?.map((item: any) => (
+                  <MovieCard key={item.id} item={item} mediaType="movie" />
+                ))}
+              </MovieRow>
+            </FadeContent>
 
-            <MovieRow
-              title={
-                <span className="inline-flex items-center gap-2">
-                  <Tv className="w-4 h-4 text-[#00f3ff]" />
-                  <BlurText text="Popular Series" delay={0.2} />
-                </span>
-              }
-            >
-              {shows?.map((item: any) => (
-                <MovieCard key={item.id} item={item} mediaType="tv" />
-              ))}
-            </MovieRow>
+            <FadeContent delay={0.3}>
+              <MovieRow
+                title={
+                  <span className="inline-flex items-center gap-2">
+                    <Tv className="w-4 h-4 text-[#00f3ff]" />
+                    <BlurText text="Popular Series" delay={0.2} />
+                  </span>
+                }
+              >
+                {shows?.map((item: any) => (
+                  <MovieCard key={item.id} item={item} mediaType="tv" />
+                ))}
+              </MovieRow>
+            </FadeContent>
 
-            <MovieRow
-              title={
-                <span className="inline-flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#00f3ff]" />
-                  <BlurText text="Top Rated" delay={0.25} />
-                </span>
-              }
-            >
-              {topRated?.map((item: any) => (
-                <MovieCard key={item.id} item={item} mediaType="movie" />
-              ))}
-            </MovieRow>
+            <FadeContent delay={0.4}>
+              <MovieRow
+                title={
+                  <span className="inline-flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-[#00f3ff]" />
+                    <BlurText text="Top Rated" delay={0.25} />
+                  </span>
+                }
+              >
+                {topRated?.map((item: any) => (
+                  <MovieCard key={item.id} item={item} mediaType="movie" />
+                ))}
+              </MovieRow>
+            </FadeContent>
           </div>
         )}
       </FadeContent>

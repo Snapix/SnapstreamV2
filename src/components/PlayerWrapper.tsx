@@ -67,18 +67,26 @@ export const PlayerWrapper = memo(function PlayerWrapper({ embedUrl, title }: Pl
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className="flex justify-end w-full gap-2">
-        <button
-          onClick={() => setShieldEnabled(!shieldEnabled)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border shadow-lg uppercase tracking-widest ${
-            shieldEnabled 
-              ? 'bg-[#107c10]/20 text-[#107c10] border-[#107c10]/40' 
-              : 'bg-red-500/20 text-red-500 border-red-500/40'
-          }`}
-        >
-          {shieldEnabled ? <Shield className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />}
-          {shieldEnabled ? 'Shield Active' : 'Shield Off'}
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShieldEnabled(!shieldEnabled)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border shadow-lg uppercase tracking-widest ${
+              shieldEnabled 
+                ? 'bg-[#107c10]/20 text-[#107c10] border-[#107c10]/40' 
+                : 'bg-red-500/20 text-red-500 border-red-500/40'
+            }`}
+          >
+            {shieldEnabled ? <Shield className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />}
+            {shieldEnabled ? 'Shield Active' : 'Shield Off'}
+          </button>
+          
+          <span className="text-[9px] text-zinc-500 uppercase tracking-tighter max-w-[200px] leading-tight">
+            {shieldEnabled 
+              ? "Blocking popups. If video doesn't load, turn shield OFF." 
+              : "Shield OFF. Popups might occur, but all players will work."}
+          </span>
+        </div>
 
         <button
           onClick={() => setControlsPosition(p => p === 'overlay' ? 'bottom' : 'overlay')}

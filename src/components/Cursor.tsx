@@ -32,14 +32,14 @@ export default function Cursor() {
       
       if (onElement) {
         const { top, left, width, height } = onElement.getBoundingClientRect()
-        const radius = window.getComputedStyle(onElement).borderTopLeftRadius
+        const radius = window.getComputedStyle(onElement).borderRadius
         
         computedState.x = left + width / 2
         computedState.y = top + height / 2
         computedState.width = width
         computedState.height = height
         computedState.radius = radius
-        computedState.scale = 1.1
+        computedState.scale = 1.05
       }
 
       return {
@@ -53,25 +53,21 @@ export default function Cursor() {
       updateProperties(cursor, state)
     }
 
-    const elements = document.querySelectorAll('a, button, input, [role="button"]');
-    const listeners: { el: Element, enter: () => void, leave: () => void }[] = [];
-
-    elements.forEach((elem) => {
-      const enter = () => { onElement = elem; };
-      const leave = () => { onElement = undefined; };
-      elem.addEventListener('mouseenter', enter);
-      elem.addEventListener('mouseleave', leave);
-      listeners.push({ el: elem, enter, leave });
-    });
+    const onMouseOver = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('a, button, input, [role="button"]');
+      if (target) {
+        onElement = target;
+      } else {
+        onElement = undefined;
+      }
+    }
 
     document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseover', onMouseOver);
 
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
-      listeners.forEach(({ el, enter, leave }) => {
-        el.removeEventListener('mouseenter', enter);
-        el.removeEventListener('mouseleave', leave);
-      });
+      document.removeEventListener('mouseover', onMouseOver);
     };
   }, []);
 
@@ -86,9 +82,10 @@ export default function Cursor() {
           width: var(--width, 42px);
           height: var(--height, 42px);
           transform: translate(calc(var(--x, 0) - var(--width, 42px) / 2), calc(var(--y, 0) - var(--height, 42px) / 2));
-          transition-duration: .1s;
-          transition-timing-function: cubic-bezier(.25, .25, .42, 1);
-          transition-property: width, height, transform;
+          transition: 
+            width 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+            height 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+            transform 0.1s cubic-bezier(0.23, 1, 0.32, 1);
           z-index: 9999;
           pointer-events: none;
           will-change: transform;
@@ -96,23 +93,23 @@ export default function Cursor() {
 
         @media (pointer: fine) {
           .custom-cursor { display: block; }
-          body { cursor: none; }
-          a, button, [role="button"], input, iframe { cursor: none !important; }
+          body { cursor: none !important; }
+          a, button, [role="button"], input, select { cursor: none !important; }
         }
 
         .custom-cursor::after {
           content: '';
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          inset: 0;
           border-radius: var(--radius, 100px);
           border: 2px solid #00f3ff;
           opacity: var(--scale, 1);
           transform: scale(var(--scale, 1));
-          transition: .3s cubic-bezier(.25, .25, .42, 1) opacity, .3s cubic-bezier(.25, .25, .42, 1) transform, .1s cubic-bezier(.25, .25, .42, 1) border-radius;
-          box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+          transition:
+            .3s cubic-bezier(.25, .25, .42, 1) opacity,
+            .3s cubic-bezier(.25, .25, .42, 1) transform,
+            .1s cubic-bezier(.25, .25, .42, 1) border-radius;
+          box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
         }
 
         body:not(:hover) .custom-cursor::after {

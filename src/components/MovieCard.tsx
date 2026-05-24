@@ -32,7 +32,7 @@ export const MovieCard = memo(function MovieCard({ item, size = 'md', mediaType 
         'group relative flex-shrink-0 rounded-xl overflow-hidden border border-white/[.06]',
         'transition-all duration-300 hover:border-white/20 hover:shadow-[0_0_30px_rgba(0,243,255,0.08)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        size === 'sm' ? 'w-32 md:w-36' : 'w-36 md:w-44',
+        size === 'sm' ? 'w-16 md:w-20' : 'w-20 md:w-28',
       )}
       aria-label={`Watch ${title}`}
     >
