@@ -10,7 +10,9 @@ export default function Home({ backgroundEnabled = true }: { backgroundEnabled?:
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const { data: trending } = useTMDB<any[]>('trending/all/week', [], { page: 1 })
+  const [randomPage] = useState(() => Math.floor(Math.random() * 5) + 1)
+  
+  const { data: trending } = useTMDB<any[]>('trending/all/day', [], { page: randomPage })
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -34,7 +36,12 @@ export default function Home({ backgroundEnabled = true }: { backgroundEnabled?:
   }, [searchQuery])
 
   const menuItems = useMemo(() => {
-    const data = searchResults.length > 0 ? searchResults : (trending ?? [])
+    let data = searchResults.length > 0 ? searchResults : (trending ?? [])
+    // Shuffle the array so the visual arrangement is always fresh
+    if (searchResults.length === 0 && data.length > 0) {
+      data = [...data].sort(() => Math.random() - 0.5)
+    }
+    
     return data.map(item => ({
       image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://picsum.photos/500/750?grayscale',
       link: `/watch/${item.media_type || 'movie'}/${item.id}`,

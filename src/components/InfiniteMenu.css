@@ -95,7 +95,7 @@
 }
 
 .action-button.active {
-  bottom: 3.8em;
+  top: 240px;
   transform: translateX(-50%) scale(1);
   opacity: 1;
   pointer-events: auto;
@@ -103,7 +103,7 @@
 }
 
 .action-button.inactive {
-  bottom: -80px;
+  top: -80px;
   transform: translateX(-50%) scale(0);
   opacity: 0;
   pointer-events: none;

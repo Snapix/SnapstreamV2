@@ -67,9 +67,6 @@ export default function App() {
 
   const dockItems = [
     { icon: <HomeIcon className="w-5 h-5" />, label: 'Home', onClick: () => navigate('/') },
-    { icon: <Search className="w-5 h-5" />, label: 'Search', onClick: () => navigate('/search') },
-    { icon: <Film className="w-5 h-5" />, label: 'Movies', onClick: () => navigate('/movies') },
-    { icon: <Tv className="w-5 h-5" />, label: 'TV Shows', onClick: () => navigate('/shows') },
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', onClick: () => setAboutOpen(true) },
   ]
 
