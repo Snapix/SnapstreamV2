@@ -15,15 +15,6 @@ import { BlurText } from '../components/BlurText'
 
 const EMBED_SOURCES = [
   {
-    id: 'vidsrc',
-    name: 'VidSrc',
-    url: (id: number, type: string, season?: number, episode?: number) =>
-      type === 'tv'
-        ? `https://vidsrc.xyz/embed/tv/${id}/${season ?? 1}/${episode ?? 1}`
-        : `https://vidsrc.xyz/embed/movie/${id}`,
-    color: 'from-cyan-500 to-blue-600',
-  },
-  {
     id: 'vidlink',
     name: 'VidLink',
     url: (id: number, type: string, season?: number, episode?: number) =>
@@ -80,7 +71,6 @@ export default function Watch() {
   const [showSeasonPicker, setShowSeasonPicker] = useState(false)
 
   const { data: details } = useTMDB<any>(`${mediaType}/${mediaId}`, null)
-  const { data: similar } = useTMDB<any[]>(`${mediaType}/${mediaId}/similar`, [])
   const { data: credits } = useTMDB<any>(`${mediaType}/${mediaId}/credits`, null)
   const { data: seasons } = useTMDB<any[]>(mediaType === 'tv' ? `tv/${mediaId}` : null, [])
 
@@ -98,7 +88,7 @@ export default function Watch() {
 
   return (
     <div className={`relative min-h-screen pt-16 sm:pt-20 ${fullscreen ? '!pt-0' : ''}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <Link
           to="/"
           className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors mb-4 group"
@@ -108,8 +98,8 @@ export default function Watch() {
         </Link>
 
         <FadeContent delay={0.1}>
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            <div className={`${fullscreen ? 'fixed inset-0 z-50 bg-black' : 'flex-1 min-w-0'}`}>
+          <div className="flex flex-col gap-8">
+            <div className={`${fullscreen ? 'fixed inset-0 z-50 bg-black' : 'w-full'}`}>
               <PlayerWrapper embedUrl={embedUrl} title={title} />
 
               <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
@@ -186,82 +176,59 @@ export default function Watch() {
               )}
             </div>
 
-            <div className="lg:w-80 flex-shrink-0 space-y-6">
-              <div className="flex gap-4">
-                <img
-                  src={poster}
-                  alt={title}
-                  className="w-24 h-36 sm:w-28 sm:h-40 rounded-xl object-cover border border-white/10"
-                />
-                <div className="flex-1 min-w-0">
-                  <h1 className="font-display text-xl sm:text-2xl font-black text-white leading-tight">
-                    {title}
-                  </h1>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-white px-1.5 py-0.5 rounded-md bg-black/50 border border-white/[.06]">
-                      <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                      {details?.vote_average?.toFixed(1)}
+            <div className="flex gap-4 bg-white/5 border border-white/10 p-6 rounded-2xl">
+              <img
+                src={poster}
+                alt={title}
+                className="w-24 h-36 sm:w-32 sm:h-48 rounded-xl object-cover border border-white/10"
+              />
+              <div className="flex-1 min-w-0">
+                <h1 className="font-display text-2xl sm:text-3xl font-black text-white leading-tight">
+                  {title}
+                </h1>
+                <div className="flex items-center gap-3 mt-3">
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-white px-2 py-1 rounded bg-black/50 border border-white/[.06]">
+                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                    {details?.vote_average?.toFixed(1)}
+                  </span>
+                  {details?.release_date && (
+                    <span className="text-sm font-medium text-zinc-400">
+                      {details.release_date.slice(0, 4)}
                     </span>
-                    {details?.release_date && (
-                      <span className="text-xs text-zinc-400">
-                        {details.release_date.slice(0, 4)}
+                  )}
+                  {details?.runtime && (
+                    <span className="text-sm font-medium text-zinc-400">{details.runtime}m</span>
+                  )}
+                </div>
+                {director && (
+                  <p className="text-sm text-zinc-400 mt-4">
+                    <span className="text-zinc-500 font-semibold">Director:</span> {director}
+                  </p>
+                )}
+                {cast && (
+                  <p className="text-sm text-zinc-400 mt-1 truncate">
+                    <span className="text-zinc-500 font-semibold">Cast:</span> {cast}
+                  </p>
+                )}
+                {details?.overview && (
+                  <p className="text-sm text-zinc-300 leading-relaxed mt-4 max-w-2xl">{details.overview}</p>
+                )}
+                {details?.genres && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {details.genres.map((g: any) => (
+                      <span
+                        key={g.id}
+                        className="text-xs font-bold uppercase tracking-wider text-zinc-300 px-3 py-1.5 rounded bg-black/40 border border-white/10"
+                      >
+                        {g.name}
                       </span>
-                    )}
-                    {details?.runtime && (
-                      <span className="text-xs text-zinc-400">{details.runtime}m</span>
-                    )}
+                    ))}
                   </div>
-                  {director && (
-                    <p className="text-xs text-zinc-400 mt-2">
-                      <span className="text-zinc-500">Director:</span> {director}
-                    </p>
-                  )}
-                  {cast && (
-                    <p className="text-xs text-zinc-400 mt-1 truncate">
-                      <span className="text-zinc-500">Cast:</span> {cast}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
-
-              {details?.overview && (
-                <p className="text-sm text-zinc-300 leading-relaxed">{details.overview}</p>
-              )}
-
-              {details?.genres && (
-                <div className="flex flex-wrap gap-2">
-                  {details.genres.map((g: any) => (
-                    <span
-                      key={g.id}
-                      className="text-[11px] font-semibold text-zinc-300 px-2.5 py-1 rounded-full bg-white/5 border border-white/10"
-                    >
-                      {g.name}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </FadeContent>
-
-        {similar && similar.length > 0 && (
-          <FadeContent delay={0.3}>
-            <div className="mt-12">
-              <MovieRow
-                title={
-                  <span className="inline-flex items-center gap-2">
-                    <Film className="w-4 h-4 text-primary" />
-                    <BlurText text="You May Also Like" delay={0.15} />
-                  </span>
-                }
-              >
-                {similar.slice(0, 12).map((item: any) => (
-                  <MovieCard key={item.id} item={item} mediaType={mediaType} />
-                ))}
-              </MovieRow>
-            </div>
-          </FadeContent>
-        )}
       </div>
     </div>
   )

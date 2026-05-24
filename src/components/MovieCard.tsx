@@ -22,7 +22,7 @@ export const MovieCard = memo(function MovieCard({ item, size = 'md', mediaType 
   const posterUrl = item.poster_path
     ? `https://image.tmdb.org/t/p/w780${item.poster_path}`
     : '/placeholder.svg'
-  const linkPath = mediaType ? `/${mediaType}/${item.id}` : `/watch/${item.media_type ?? 'movie'}/${item.id}`
+  const linkPath = `/watch/${mediaType || item.media_type || 'movie'}/${item.id}`
   const title = item.title ?? item.name ?? 'Untitled'
 
   return (

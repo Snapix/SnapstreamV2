@@ -63,8 +63,15 @@ export function useTMDB<T>(endpoint: string | null, fallback: T, params?: Record
       return
     }
     setLoading(true)
-    tmdb.fetch<T>(endpoint, params as Record<string, string>)
-      .then(res => { setData(res); setLoading(false) })
+    tmdb.fetch<any>(endpoint, params as Record<string, string>)
+      .then(res => {
+        if (Array.isArray(fallback) && res && res.results) {
+          setData(res.results)
+        } else {
+          setData(res)
+        }
+        setLoading(false)
+      })
       .catch(() => { setData(fallback); setLoading(false) })
   }, [endpoint, JSON.stringify(params)])
 
