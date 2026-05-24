@@ -6,17 +6,13 @@ interface SettingsModalProps {
   onClose: () => void;
   cursorEnabled: boolean;
   setCursorEnabled: (v: boolean) => void;
-  backgroundEnabled: boolean;
-  setBackgroundEnabled: (v: boolean) => void;
 }
 
 export default function SettingsModal({ 
   isOpen, 
   onClose,
   cursorEnabled,
-  setCursorEnabled,
-  backgroundEnabled,
-  setBackgroundEnabled
+  setCursorEnabled
 }: SettingsModalProps) {
   return (
     <AnimatePresence>
@@ -65,24 +61,6 @@ export default function SettingsModal({
                   className={`w-12 h-6 rounded-full transition-colors relative outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#111] ${cursorEnabled ? 'bg-[#00f3ff]' : 'bg-zinc-700'}`}
                 >
                   <div className={`absolute top-1 bottom-1 w-4 bg-black rounded-full transition-transform duration-300 ${cursorEnabled ? 'left-7' : 'left-1'}`} />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06]">
-                    <ImageIcon className="w-5 h-5 text-[#00f3ff]" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Live Background</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">Toggle the dynamic WebGL wallpaper</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setBackgroundEnabled(!backgroundEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#111] ${backgroundEnabled ? 'bg-[#00f3ff]' : 'bg-zinc-700'}`}
-                >
-                  <div className={`absolute top-1 bottom-1 w-4 bg-black rounded-full transition-transform duration-300 ${backgroundEnabled ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>
             </div>

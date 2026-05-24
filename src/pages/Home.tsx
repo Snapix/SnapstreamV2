@@ -6,7 +6,7 @@ import { FadeContent } from '../components/FadeContent'
 import InfiniteMenu from '../components/InfiniteMenu'
 import { tmdb } from '../lib/api'
 
-export default function Home({ backgroundEnabled = true }: { backgroundEnabled?: boolean }) {
+export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -52,32 +52,30 @@ export default function Home({ backgroundEnabled = true }: { backgroundEnabled?:
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black text-white antialiased">
-      {backgroundEnabled && <DarkVeil />}
-
       {/* Header Area with Search */}
-      <div className="absolute top-0 inset-x-0 z-50 p-6 sm:p-10 flex flex-col items-center">
-        <div className="w-full max-w-2xl">
+      <div className="absolute top-0 inset-x-0 z-50 p-4 sm:p-6 flex flex-col items-center">
+        <div className="w-full max-w-xl">
           <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="absolute inset-0 bg-[#00f3ff]/20 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-            <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl px-6 py-4 shadow-2xl group-focus-within:border-[#00f3ff]/50 transition-all duration-300">
-              <Search className="w-6 h-6 text-zinc-500 group-focus-within:text-[#00f3ff] transition-colors" />
+            <div className="absolute inset-0 bg-[#00f3ff]/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+            <div className="relative flex items-center bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl px-5 py-3 shadow-2xl group-focus-within:border-[#00f3ff]/40 transition-all duration-300">
+              <Search className="w-5 h-5 text-zinc-500 group-focus-within:text-[#00f3ff] transition-colors" />
               <input
                 type="text"
                 placeholder="Search movies, TV shows, anime..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent border-none outline-none px-4 text-xl font-medium text-white placeholder:text-zinc-500"
+                className="flex-1 bg-transparent border-none outline-none px-4 text-lg font-medium text-white placeholder:text-zinc-500"
               />
-              {isSearching && <Loader2 className="w-5 h-5 text-[#00f3ff] animate-spin" />}
+              {isSearching && <Loader2 className="w-4 h-4 text-[#00f3ff] animate-spin" />}
             </div>
           </div>
           
-          <div className="mt-6 flex items-center justify-center gap-6 animate-in fade-in slide-in-from-top-2 duration-1000 delay-200">
-            <h1 className="font-display text-3xl font-black text-white tracking-widest uppercase opacity-30">
+          <div className="mt-4 flex items-center justify-center gap-4 animate-in fade-in slide-in-from-top-2 duration-1000 delay-200">
+            <h1 className="font-display text-xl font-black text-white tracking-widest uppercase opacity-25">
               SnapStream
             </h1>
-            <div className="h-6 w-px bg-white/10" />
-            <p className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.4em] opacity-60">
+            <div className="h-4 w-px bg-white/10" />
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em] opacity-50">
               {searchResults.length > 0 ? `Results for "${searchQuery}"` : 'Trending This Week'}
             </p>
           </div>

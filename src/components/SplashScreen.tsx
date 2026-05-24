@@ -1,66 +1,77 @@
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 
-interface SplashScreenProps { onFinish: () => void }
-
-export default function SplashScreen({ onFinish }: SplashScreenProps) {
-  const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in')
+export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('hold'), 500)
-    const t2 = setTimeout(() => setPhase('out'), 2000)
-    const t3 = setTimeout(() => onFinish(), 2600)
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
-  }, [onFinish])
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.random() * 25 + 25; // Faster loading
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        setProgress(currentProgress);
+        clearInterval(interval);
+        setTimeout(onFinish, 150); // Faster exit
+      } else {
+        setProgress(currentProgress);
+      }
+    }, 80);
+
+    return () => clearInterval(interval);
+  }, [onFinish]);
 
   return (
-    <AnimatePresence>
-      {phase !== 'out' ? (
-        <motion.div
-          key="splash"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#060606] overflow-hidden"
-        >
-          <div className="relative flex flex-col items-center gap-8">
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0, rotate: -180 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              transition={{ duration: 1, type: "spring", bounce: 0.5 }}
-              className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-[#111] border border-white/10 flex items-center justify-center shadow-[0_0_60px_rgba(0,243,255,0.2)]"
+    <motion.div
+      key="splash"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6, ease: 'easeInOut' }}
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black"
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="flex flex-col items-center"
+      >
+        {/* SnapStream Logo Text */}
+        <div className="flex space-x-1 overflow-hidden font-display font-black tracking-tighter text-6xl md:text-8xl mb-8">
+          {['S', 'N', 'A', 'P', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'V', '2'].map((letter, i) => (
+            <motion.span
+              key={i}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                duration: 0.4,
+                delay: i * 0.04,
+                ease: [0.2, 0.6, 0.3, 1]
+              }}
+              className={i < 4 ? "text-[#00f3ff]" : "text-white"}
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-[-2px] rounded-full border border-dashed border-[#00f3ff]/50"
-              />
-              <span className="font-display font-black text-white text-5xl sm:text-6xl">S</span>
-            </motion.div>
+              {letter === ' ' ? '\u00A0' : letter}
+            </motion.span>
+          ))}
+        </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-              className="flex flex-col items-center"
-            >
-              <h1 className="font-display font-black text-4xl sm:text-5xl tracking-[0.2em] text-white uppercase text-center">
-                SNAPSTREAM
-              </h1>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 1.5, delay: 0.6, ease: "easeInOut" }}
-                className="h-[2px] bg-gradient-to-r from-transparent via-[#00f3ff] to-transparent mt-4 opacity-50"
-              />
-              <p className="text-sm sm:text-base text-zinc-500 font-medium tracking-[0.3em] mt-4 uppercase animate-pulse">
-                Starting up...
-              </p>
-            </motion.div>
-          </div>
+        {/* Fake Loading Bar */}
+        <div className="w-64 md:w-96 h-1 mt-4 relative bg-white/10 rounded overflow-hidden">
+          <motion.div
+            className="absolute top-0 left-0 h-full bg-[#00f3ff]"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ ease: "linear", duration: 0.1 }}
+          />
+        </div>
+        
+        <motion.div 
+          className="mt-4 text-[#00f3ff]/60 text-[10px] tracking-[0.4em] uppercase font-bold"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        >
+          Initializing... {Math.floor(progress)}%
         </motion.div>
-      ) : null}
-    </AnimatePresence>
-  )
+      </motion.div>
+    </motion.div>
+  );
 }

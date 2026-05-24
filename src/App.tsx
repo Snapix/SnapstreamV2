@@ -21,7 +21,7 @@ function AppFallback() {
   )
 }
 
-function AnimatedRoutes({ backgroundEnabled }: { backgroundEnabled: boolean }) {
+function AnimatedRoutes() {
   const location = useLocation()
   return (
     <AnimatePresence mode="wait">
@@ -33,7 +33,7 @@ function AnimatedRoutes({ backgroundEnabled }: { backgroundEnabled: boolean }) {
         transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       >
         <Routes location={location}>
-          <Route path="/" element={<Home backgroundEnabled={backgroundEnabled} />} />
+          <Route path="/" element={<Home />} />
           <Route path="/watch/:type/:id" element={<Watch />} />
           <Route path="/search" element={<SearchPage />} />
           <Route
@@ -58,7 +58,6 @@ export default function App() {
   const [aboutOpen, setAboutOpen] = useState(false)
   const [creditsOpen, setCreditsOpen] = useState(false)
   const [cursorEnabled, setCursorEnabled] = useState(true)
-  const [backgroundEnabled, setBackgroundEnabled] = useState(true)
   const navigate = useNavigate()
 
   if (!splashDone) {
@@ -71,7 +70,7 @@ export default function App() {
   ]
 
   return (
-    <div className={`relative min-h-screen text-white antialiased overflow-x-hidden ${!backgroundEnabled ? 'bg-[#060606]' : ''}`}>
+    <div className={`relative min-h-screen bg-black text-white antialiased overflow-x-hidden`}>
       <GlassSurface />
 
       {cursorEnabled && <Cursor />}
@@ -88,7 +87,7 @@ export default function App() {
 
       <main className="transition-all duration-300">
         <Suspense fallback={<AppFallback />}>
-          <AnimatedRoutes backgroundEnabled={backgroundEnabled} />
+          <AnimatedRoutes />
         </Suspense>
       </main>
 
@@ -104,8 +103,6 @@ export default function App() {
         onClose={() => setAboutOpen(false)} 
         cursorEnabled={cursorEnabled}
         setCursorEnabled={setCursorEnabled}
-        backgroundEnabled={backgroundEnabled}
-        setBackgroundEnabled={setBackgroundEnabled}
       />
 
       <CreditsModal

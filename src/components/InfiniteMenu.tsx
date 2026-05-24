@@ -672,7 +672,7 @@ class InfiniteGridMenu {
                 const img = new Image();
                 return new Promise((resImg, rejImg) => {
                   img.onload = () => resImg(img);
-                  img.onerror = () => rejImg();
+                  img.onerror = rejImg;
                   img.src = objectUrl;
                 });
               } catch (e) {
@@ -890,7 +890,9 @@ export default function InfiniteMenu({ items = [], scale = 1.0 }) {
   const canvasRef = useRef(null);
   const [activeItem, setActiveItem] = useState(null);
   const [isMoving, setIsMoving] = useState(false);
+  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -927,36 +929,71 @@ export default function InfiniteMenu({ items = [], scale = 1.0 }) {
     };
   }, [items, scale, navigate]);
 
-  const handleButtonClick = () => {
-    if (!activeItem?.link) return;
-    if (activeItem.link.startsWith('http')) {
-      window.open(activeItem.link, '_blank');
-    } else {
-      navigate(activeItem.link);
+  useEffect(() => {
+    // Reset timer on movement or item change
+    setProgress(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    if (activeItem && !isMoving) {
+      const startTime = Date.now();
+      timerRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const newProgress = Math.min((elapsed / 10000) * 100, 100);
+        setProgress(newProgress);
+
+        if (newProgress >= 100) {
+          clearInterval(timerRef.current);
+          navigate(activeItem.link);
+        }
+      }, 30);
     }
-  };
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [activeItem, isMoving, navigate]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <canvas id="infinite-grid-menu-canvas" ref={canvasRef} className="cursor-grab active:cursor-grabbing outline-none" />
 
-      {activeItem && (
+      {/* Screen Border Progress Bar */}
+      {progress > 0 && !isMoving && (
+        <div className="fixed top-0 inset-x-0 h-1 z-[100] bg-white/5 overflow-hidden">
+          <div 
+            className="h-full bg-[#00f3ff] shadow-[0_0_15px_#00f3ff]" 
+            style={{ width: `${progress}%`, transition: 'width 0.1s linear' }}
+          />
+        </div>
+      )}
+
+      {activeItem && !isMoving && (
         <>
-          <h2 className={`face-title text-white font-display uppercase tracking-widest ${isMoving ? 'inactive' : 'active'}`}>
-            {activeItem.title}
-          </h2>
+          {/* Title on the Right */}
+          <div className="absolute top-1/2 right-[10%] -translate-y-1/2 pointer-events-none max-w-xl text-right">
+            <h2 className="face-title text-white font-display text-6xl sm:text-8xl uppercase tracking-[0.2em] leading-tight animate-in fade-in slide-in-from-right-8 duration-300">
+              {activeItem.title}
+            </h2>
+          </div>
 
-          <p className={`face-description text-zinc-400 ${isMoving ? 'inactive' : 'active'}`}> 
-            {activeItem.description}
-          </p>
+          {/* Description on the Left */}
+          <div className="absolute top-1/2 left-[10%] -translate-y-1/2 pointer-events-none max-w-xl text-left">
+            <p className="face-description text-zinc-400 text-base sm:text-xl line-clamp-6 animate-in fade-in slide-in-from-left-8 duration-500 delay-100"> 
+              {activeItem.description}
+            </p>
+          </div>
 
-          <div onClick={handleButtonClick} className={`action-button bg-[#00f3ff] shadow-[0_0_20px_rgba(0,243,255,0.4)] ${isMoving ? 'inactive' : 'active'}`}>
-            <p className="action-button-icon font-black text-black pt-1.5 flex items-center justify-center">&#x2197;</p>
+          {/* Autoplay Timer at the Bottom */}
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 pointer-events-none">
+            <div className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] font-black uppercase tracking-[0.4em] text-[#00f3ff] animate-pulse">
+              Autoplay in {Math.ceil(10 - (progress / 100) * 10)}s
+            </div>
           </div>
         </>
       )}
+
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 pointer-events-none text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#00f3ff] animate-pulse">Drag to Rotate • Click to Watch</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#00f3ff] animate-pulse">Drag to Rotate • Hold to Watch</p>
       </div>
     </div>
   );
