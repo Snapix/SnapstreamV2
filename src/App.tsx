@@ -71,6 +71,7 @@ export default function App() {
 
   const dockItems = [
     { icon: <HomeIcon className="w-5 h-5" />, label: 'Home', onClick: () => navigate('/') },
+    { icon: <Sparkles className="w-5 h-5 text-[#00f3ff]" />, label: 'AI Assistant', onClick: () => navigate('/ai') },
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', onClick: () => setAboutOpen(true) },
   ]
 

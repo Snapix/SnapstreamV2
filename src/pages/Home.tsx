@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
-import { Search, Loader2, Play, Activity, History as HistoryIcon, Flame, Settings } from 'lucide-react'
+import { Search, Loader2, Play, Activity, History as HistoryIcon, Flame, Settings, Sparkles } from 'lucide-react'
 import { useTMDB } from '../hooks/useTMDB'
 import { FadeContent } from '../components/FadeContent'
 import { tmdb } from '../lib/api'
@@ -228,6 +228,15 @@ export default function Home({ mediaType = 'video' }: HomeProps) {
         <div className="h-full w-full overflow-y-auto pt-40 pb-20 px-12 scrollbar-hide">
           <div className="max-w-[2400px] mx-auto space-y-16">
             
+            <div className="flex items-center gap-4 mb-8 pointer-events-auto">
+               <button 
+                 onClick={() => navigate('/ai')}
+                 className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#00f3ff]/10 border border-[#00f3ff]/20 text-[#00f3ff] font-black uppercase tracking-widest text-[10px] hover:bg-[#00f3ff] hover:text-black transition-all shadow-[0_0_20px_rgba(0,243,255,0.2)]"
+               >
+                  <Sparkles className="w-4 h-4" /> Try SnapStream AI
+               </button>
+            </div>
+
             {/* Main TV Grid */}
             <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6 sm:gap-8">
               {gridItems.map((item, idx) => (
