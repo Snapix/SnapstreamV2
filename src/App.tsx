@@ -1,7 +1,7 @@
 import { useState, lazy, Suspense } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import Dock from './components/Dock'
-import { Home as HomeIcon, Search, Film, Tv, Settings, Info } from 'lucide-react'
+import { Home as HomeIcon, Search, Film, Tv, Settings, Info, Sparkles } from 'lucide-react'
 import SettingsModal from './components/AboutModal'
 import CreditsModal from './components/CreditsModal'
 import GlassSurface from './components/GlassSurface'
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'motion/react'
 const Home = lazy(() => import('./pages/Home'))
 const Watch = lazy(() => import('./pages/Watch'))
 const SearchPage = lazy(() => import('./pages/Search'))
+const AIAssistant = lazy(() => import('./pages/AIAssistant'))
 const GameDetails = lazy(() => import('./pages/GameDetails'))
 const LivePlayer = lazy(() => import('./pages/LivePlayer'))
 
@@ -38,6 +39,7 @@ function AnimatedRoutes({ mediaType }: { mediaType: 'video' | 'apps' | 'livetv' 
           <Route path="/" element={<Home mediaType={mediaType} />} />
           <Route path="/watch/:type/:id" element={<Watch />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/ai" element={<AIAssistant />} />
           <Route path="/game/:id" element={<GameDetails />} />
           <Route path="/live/:url/:name" element={<LivePlayer />} />
           <Route
@@ -76,7 +78,7 @@ export default function App() {
   ]
 
   return (
-    <div className={`relative min-h-screen bg-black text-white antialiased overflow-x-hidden`}>
+    <div className={`relative min-h-screen bg-black text-white antialiased overflow-x-hidden select-none`}>
       <GlassSurface />
 
       {cursorEnabled && <Cursor />}
