@@ -1,10 +1,10 @@
+// @ts-nocheck
 import { useEffect, useRef, useState } from 'react';
 import { mat4, quat, vec2, vec3 } from 'gl-matrix';
 import { useNavigate } from 'react-router-dom';
 import './InfiniteMenu.css';
 
 const discVertShaderSource = `#version 300 es
-
 uniform mat4 uWorldMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
@@ -19,8 +19,6 @@ in mat4 aInstanceMatrix;
 out vec2 vUvs;
 out float vAlpha;
 flat out int vInstanceId;
-
-#define PI 3.141593
 
 void main() {
     vec4 worldPosition = uWorldMatrix * aInstanceMatrix * vec4(aModelPosition, 1.);
@@ -73,17 +71,17 @@ void main() {
     ivec2 texSize = textureSize(uTex, 0);
     float imageAspect = float(texSize.x) / float(texSize.y);
     float containerAspect = 1.0;
-
-    float scale = max(imageAspect / containerAspect,
+    
+    float scale = max(imageAspect / containerAspect, 
                      containerAspect / imageAspect);
-
+    
     vec2 st = vec2(vUvs.x, 1.0 - vUvs.y);
     st = (st - 0.5) * scale + 0.5;
-
+    
     st = clamp(st, 0.0, 1.0);
-
+    
     st = st * cellSize + cellOffset;
-
+    
     outColor = texture(uTex, st);
     outColor.a *= vAlpha;
 }
@@ -207,103 +205,39 @@ class IcosahedronGeometry extends Geometry {
     super();
     const t = Math.sqrt(5) * 0.5 + 0.5;
     this.addVertex(
-      -1,
-      t,
-      0,
-      1,
-      t,
-      0,
-      -1,
-      -t,
-      0,
-      1,
-      -t,
-      0,
-      0,
-      -1,
-      t,
-      0,
-      1,
-      t,
-      0,
-      -1,
-      -t,
-      0,
-      1,
-      -t,
-      t,
-      0,
-      -1,
-      t,
-      0,
-      1,
-      -t,
-      0,
-      -1,
-      -t,
-      0,
-      1
+      -1, t, 0,
+      1, t, 0,
+      -1, -t, 0,
+      1, -t, 0,
+      0, -1, t,
+      0, 1, t,
+      0, -1, -t,
+      0, 1, -t,
+      t, 0, -1,
+      t, 0, 1,
+      -t, 0, -1,
+      -t, 0, 1
     ).addFace(
-      0,
-      11,
-      5,
-      0,
-      5,
-      1,
-      0,
-      1,
-      7,
-      0,
-      7,
-      10,
-      0,
-      10,
-      11,
-      1,
-      5,
-      9,
-      5,
-      11,
-      4,
-      11,
-      10,
-      2,
-      10,
-      7,
-      6,
-      7,
-      1,
-      8,
-      3,
-      9,
-      4,
-      3,
-      4,
-      2,
-      3,
-      2,
-      6,
-      3,
-      6,
-      8,
-      3,
-      8,
-      9,
-      4,
-      9,
-      5,
-      2,
-      4,
-      11,
-      6,
-      2,
-      10,
-      8,
-      6,
-      7,
-      9,
-      8,
-      1
+      0, 11, 5,
+      0, 5, 1,
+      0, 1, 7,
+      0, 7, 10,
+      0, 10, 11,
+      1, 5, 9,
+      5, 11, 4,
+      11, 10, 2,
+      10, 7, 6,
+      7, 1, 8,
+      3, 9, 4,
+      3, 4, 2,
+      3, 2, 6,
+      3, 6, 8,
+      3, 8, 9,
+      4, 9, 5,
+      2, 4, 11,
+      6, 2, 10,
+      8, 6, 7,
+      9, 8, 1
     );
   }
 }
@@ -450,22 +384,30 @@ class ArcballControl {
     this._rotationVelocity = 0;
     this._combinedQuat = quat.create();
 
-    canvas.addEventListener('pointerdown', e => {
-      vec2.set(this.pointerPos, e.clientX, e.clientY);
+    const onStart = e => {
+      const pos = e.touches ? e.touches[0] : e;
+      vec2.set(this.pointerPos, pos.clientX, pos.clientY);
       vec2.copy(this.previousPointerPos, this.pointerPos);
       this.isPointerDown = true;
-    });
-    canvas.addEventListener('pointerup', () => {
+    };
+
+    const onEnd = () => {
       this.isPointerDown = false;
-    });
-    canvas.addEventListener('pointerleave', () => {
-      this.isPointerDown = false;
-    });
-    canvas.addEventListener('pointermove', e => {
+    };
+
+    const onMove = e => {
       if (this.isPointerDown) {
-        vec2.set(this.pointerPos, e.clientX, e.clientY);
+        const pos = e.touches ? e.touches[0] : e;
+        vec2.set(this.pointerPos, pos.clientX, pos.clientY);
       }
-    });
+    };
+
+    canvas.addEventListener('pointerdown', onStart);
+    canvas.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('pointerup', onEnd);
+    window.addEventListener('touchend', onEnd);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
 
     canvas.style.touchAction = 'none';
   }
@@ -596,6 +538,7 @@ class InfiniteGridMenu {
   smoothRotationVelocity = 0;
   scaleFactor = 1.0;
   movementActive = false;
+  animationId = null;
 
   constructor(canvas, items, onActiveItemChange, onMovementChange, onInit = null, scale = 1.0) {
     this.canvas = canvas;
@@ -604,7 +547,15 @@ class InfiniteGridMenu {
     this.onMovementChange = onMovementChange || (() => {});
     this.scaleFactor = scale;
     this.camera.position[2] = 3 * scale;
+    
+    this.gl = this.canvas.getContext('webgl2', { antialias: true, alpha: true });
+    if (!this.gl) throw new Error('WebGL 2 not supported!');
+    
     this.#init(onInit);
+  }
+
+  destroy() {
+    if (this.animationId) cancelAnimationFrame(this.animationId);
   }
 
   resize() {
@@ -628,15 +579,11 @@ class InfiniteGridMenu {
     this.#animate(this.#deltaTime);
     this.#render();
 
-    requestAnimationFrame(t => this.run(t));
+    this.animationId = requestAnimationFrame(t => this.run(t));
   }
 
   #init(onInit) {
-    this.gl = this.canvas.getContext('webgl2', { antialias: true, alpha: false });
     const gl = this.gl;
-    if (!gl) {
-      throw new Error('No WebGL 2 context!');
-    }
 
     this.viewportSize = vec2.fromValues(this.canvas.clientWidth, this.canvas.clientHeight);
     this.drawBufferSize = vec2.clone(this.viewportSize);
@@ -656,10 +603,8 @@ class InfiniteGridMenu {
       uViewMatrix: gl.getUniformLocation(this.discProgram, 'uViewMatrix'),
       uProjectionMatrix: gl.getUniformLocation(this.discProgram, 'uProjectionMatrix'),
       uCameraPosition: gl.getUniformLocation(this.discProgram, 'uCameraPosition'),
-      uScaleFactor: gl.getUniformLocation(this.discProgram, 'uScaleFactor'),
       uRotationAxisVelocity: gl.getUniformLocation(this.discProgram, 'uRotationAxisVelocity'),
       uTex: gl.getUniformLocation(this.discProgram, 'uTex'),
-      uFrames: gl.getUniformLocation(this.discProgram, 'uFrames'),
       uItemCount: gl.getUniformLocation(this.discProgram, 'uItemCount'),
       uAtlasSize: gl.getUniformLocation(this.discProgram, 'uAtlasSize')
     };
@@ -686,6 +631,14 @@ class InfiniteGridMenu {
 
     this.control = new ArcballControl(this.canvas, deltaTime => this.#onControlUpdate(deltaTime));
 
+    this.canvas.addEventListener('click', () => {
+      const nearest = this.#findNearestVertexIndex();
+      if (nearest !== null) {
+        const itemIndex = nearest % Math.max(1, this.items.length);
+        this.onActiveItemChange(itemIndex);
+      }
+    });
+
     this.#updateCameraMatrix();
     this.#updateProjectionMatrix(gl);
     this.resize();
@@ -699,35 +652,51 @@ class InfiniteGridMenu {
 
     const itemCount = Math.max(1, this.items.length);
     this.atlasSize = Math.ceil(Math.sqrt(itemCount));
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
     const cellSize = 512;
-
+    const canvas = document.createElement('canvas');
     canvas.width = this.atlasSize * cellSize;
     canvas.height = this.atlasSize * cellSize;
+    const ctx = canvas.getContext('2d');
 
     Promise.all(
       this.items.map(
         item =>
-          new Promise(resolve => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = () => {
-              // Create a placeholder image on error
-              const placeholder = document.createElement('canvas');
-              placeholder.width = cellSize;
-              placeholder.height = cellSize;
-              const pctx = placeholder.getContext('2d');
-              pctx.fillStyle = '#1a1a2e';
-              pctx.fillRect(0, 0, cellSize, cellSize);
-              pctx.fillStyle = '#666';
-              pctx.font = '48px sans-serif';
-              pctx.textAlign = 'center';
-              pctx.fillText('No Image', cellSize / 2, cellSize / 2);
-              resolve(placeholder);
+          new Promise(async resolve => {
+            const tryLoad = async (url, useProxy = false) => {
+              try {
+                const finalUrl = useProxy ? `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` : url;
+                const res = await fetch(finalUrl, { mode: 'cors' });
+                if (!res.ok) throw new Error('Fetch failed');
+                const blob = await res.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                const img = new Image();
+                return new Promise((resImg, rejImg) => {
+                  img.onload = () => resImg(img);
+                  img.onerror = rejImg;
+                  img.src = objectUrl;
+                });
+              } catch (e) {
+                if (!useProxy) return tryLoad(url, true);
+                throw e;
+              }
             };
-            img.src = item.image;
+
+            try {
+              const loadedImg = await tryLoad(item.image);
+              resolve(loadedImg);
+            } catch (err) {
+              const fallback = document.createElement('canvas');
+              fallback.width = cellSize;
+              fallback.height = cellSize;
+              const fctx = fallback.getContext('2d');
+              fctx.fillStyle = '#111';
+              fctx.fillRect(0, 0, cellSize, cellSize);
+              fctx.fillStyle = '#00f3ff';
+              fctx.font = 'bold 30px sans-serif';
+              fctx.textAlign = 'center';
+              fctx.fillText('SNAPSTREAM', cellSize/2, cellSize/2);
+              resolve(fallback);
+            }
           })
       )
     ).then(images => {
@@ -740,6 +709,7 @@ class InfiniteGridMenu {
       gl.bindTexture(gl.TEXTURE_2D, this.tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
       gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     });
   }
 
@@ -916,38 +886,27 @@ class InfiniteGridMenu {
   }
 }
 
-interface MenuItem {
-  id: number;
-  title: string;
-  image: string;
-  media_type: 'movie' | 'tv';
-  type: 'movie' | 'tv';
-}
-
-interface InfiniteMenuProps {
-  items: MenuItem[];
-  scale?: number;
-}
-
-export default function InfiniteMenu({ items = [], scale = 1.0 }: InfiniteMenuProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [activeItem, setActiveItem] = useState<MenuItem | null>(null);
+export default function InfiniteMenu({ items = [], scale = 1.0 }) {
+  const canvasRef = useRef(null);
+  const [activeItem, setActiveItem] = useState(null);
   const [isMoving, setIsMoving] = useState(false);
+  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    let sketch: InfiniteGridMenu | null = null;
+    let sketch;
 
-    const handleActiveItem = (index: number) => {
+    const handleActiveItem = index => {
       const itemIndex = index % items.length;
       setActiveItem(items[itemIndex]);
     };
 
-    if (canvas) {
+    if (canvas && items.length > 0) {
       sketch = new InfiniteGridMenu(
         canvas,
-        items.length ? items : [],
+        items,
         handleActiveItem,
         setIsMoving,
         sk => sk.run(),
@@ -962,34 +921,80 @@ export default function InfiniteMenu({ items = [], scale = 1.0 }: InfiniteMenuPr
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize();
+    if (sketch) handleResize();
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (sketch) sketch.destroy();
     };
-  }, [items, scale]);
+  }, [items, scale, navigate]);
 
-  const handleButtonClick = () => {
-    if (!activeItem) return;
-    // Navigate to watch page with the selected movie
-    navigate(`/watch/${activeItem.media_type}/${activeItem.id}`);
-  };
+  useEffect(() => {
+    // Reset timer on movement or item change
+    setProgress(0);
+    if (timerRef.current) clearInterval(timerRef.current);
 
-  if (!items.length) return null;
+    if (activeItem && !isMoving) {
+      const startTime = Date.now();
+      timerRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const newProgress = Math.min((elapsed / 10000) * 100, 100);
+        setProgress(newProgress);
+
+        if (newProgress >= 100) {
+          clearInterval(timerRef.current);
+          navigate(activeItem.link);
+        }
+      }, 30);
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [activeItem, isMoving, navigate]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '75vh' }}>
-      <canvas id="infinite-grid-menu-canvas" ref={canvasRef} />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <canvas id="infinite-grid-menu-canvas" ref={canvasRef} className="cursor-grab active:cursor-grabbing outline-none" />
 
-      {activeItem && (
+      {/* Screen Border Progress Bar */}
+      {progress > 0 && !isMoving && (
+        <div className="fixed top-0 inset-x-0 h-1 z-[100] bg-white/5 overflow-hidden">
+          <div 
+            className="h-full bg-[#00f3ff] shadow-[0_0_15px_#00f3ff]" 
+            style={{ width: `${progress}%`, transition: 'width 0.1s linear' }}
+          />
+        </div>
+      )}
+
+      {activeItem && !isMoving && (
         <>
-          <h2 className={`face-title ${isMoving ? 'inactive' : 'active'}`}>{activeItem.title}</h2>
+          {/* Title on the Right */}
+          <div className="absolute top-1/2 right-[10%] -translate-y-1/2 pointer-events-none max-w-xl text-right">
+            <h2 className="face-title text-white font-display text-6xl sm:text-8xl uppercase tracking-[0.2em] leading-tight animate-in fade-in slide-in-from-right-8 duration-300">
+              {activeItem.title}
+            </h2>
+          </div>
 
-          <div onClick={handleButtonClick} className={`action-button ${isMoving ? 'inactive' : 'active'}`} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && handleButtonClick()}>
-            <p className="action-button-icon">▶</p>
+          {/* Description on the Left */}
+          <div className="absolute top-1/2 left-[10%] -translate-y-1/2 pointer-events-none max-w-xl text-left">
+            <p className="face-description text-zinc-400 text-base sm:text-xl line-clamp-6 animate-in fade-in slide-in-from-left-8 duration-500 delay-100"> 
+              {activeItem.description}
+            </p>
+          </div>
+
+          {/* Autoplay Timer at the Bottom */}
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 pointer-events-none">
+            <div className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] font-black uppercase tracking-[0.4em] text-[#00f3ff] animate-pulse">
+              Autoplay in {Math.ceil(10 - (progress / 100) * 10)}s
+            </div>
           </div>
         </>
       )}
+
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 pointer-events-none text-center">
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#00f3ff] animate-pulse">Drag to Rotate • Hold to Watch</p>
+      </div>
     </div>
   );
 }
